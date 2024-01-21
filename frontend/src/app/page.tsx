@@ -2,9 +2,11 @@
 import styles from "./page.module.css";
 import {IMessage, IMessageForm} from "@/types";
 import {FormEvent, useEffect, useState} from "react";
-import {Alert, Button, TextField} from "@mui/material";
+import {Alert, Box, Button, Card, CardContent, CircularProgress, Grid, TextField, Typography} from "@mui/material";
 import {useMutation} from "@tanstack/react-query";
 import axiosApi from "@/axiosApi";
+import dayjs from "dayjs";
+import {auto} from "@popperjs/core";
 
 
 const Home = () => {
@@ -22,7 +24,7 @@ const Home = () => {
             try {
                 const response = await axiosApi.get(`messages?datetime=${lastDate}`);
                 setLastDate(response.data[response.data.length - 1].date);
-                setMessages((prevState) => [...prevState, ...response.data]);
+                setMessages((prevState) => [...response.data, ...prevState,]);
             } catch (e) {
                 console.error(e);
             }
@@ -35,7 +37,7 @@ const Home = () => {
             try {
                 const response = await axiosApi.get('/messages');
                 setLastDate(response.data[response.data.length - 1].date);
-                setMessages(response.data);
+                setMessages(response.data.reverse());
             } catch (e) {
                 console.error(e);
             }
@@ -73,7 +75,6 @@ const Home = () => {
     const SendMessageReq  = useMutation( {
         mutationFn: async (formData: IMessageForm) => {
             if (formData.message.trim().length > 0 && formData.author.trim().length > 0) {
-                setLoading(true);
                 try {
                     const response = await axiosApi.post('/messages',{...formData});
                     setMessage((prev) => ({
@@ -84,7 +85,6 @@ const Home = () => {
                 } catch (e) {
                     console.error(e);
                 }
-                setLoading(false);
                 setError(false);
             } else {
                 setError(true);
@@ -130,6 +130,32 @@ const Home = () => {
                     type="submit"
                 >Send</Button>
             </form>
+
+            <div>
+                {loading ?  <CircularProgress/> :
+                    <>
+                        {messages.length === 0 ? <p>No messages yet</p> :
+                            <Box sx={{height: 400, overflowY: 'auto', width: 320}}>
+                                {messages.map(message => (
+                                    <Card sx={{ minWidth: 275, mt: 2 }}>
+                                        <CardContent>
+                                            <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
+                                                {dayjs(message.date).format('MMMM D, YYYY h:mm A')}
+                                            </Typography>
+                                            <Typography variant="h5" component="div">
+                                                {message.author}
+                                            </Typography>
+                                            <Typography variant="body2">
+                                                {message.message}
+                                            </Typography>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </Box>
+                        }
+                    </>
+                }
+            </div>
         </main>
     );
 };
