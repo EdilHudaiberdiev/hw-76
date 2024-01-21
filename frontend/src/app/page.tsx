@@ -79,8 +79,8 @@ const Home = () => {
                     const response = await axiosApi.post('/messages',{...formData});
                     setMessage((prev) => ({
                         ...prev,
-                        message: message.message,
-                        author: message.author,
+                        message: '',
+                        author: '',
                     }));
                 } catch (e) {
                     console.error(e);
