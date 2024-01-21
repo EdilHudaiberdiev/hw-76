@@ -1,6 +1,7 @@
 import {promises as fs} from 'fs';
 import * as crypto from 'crypto';
 import {IMessages, MessageWithoutID} from "./types";
+import {DiffieHellmanGroup} from "crypto";
 
 const fileName = './db.json';
 let data: IMessages[] = [];
@@ -14,6 +15,9 @@ const fileDb = {
             data = [];
         }
     },
+    async getThirtyMessages(messagesArray: IMessages[]=data) {
+        return messagesArray?.slice(-30);
+    },
     async addMessageToJson(message: MessageWithoutID) {
         const id = crypto.randomUUID();
         const date = new Date().toISOString();
@@ -24,7 +28,17 @@ const fileDb = {
 
         return newMessage;
     },
+    getByQueryDatetime(datetime: Date): IMessages[] {
+        let lastMessages: IMessages[] = [];
 
+        data.forEach(message => {
+           if (new Date(message.date) >= datetime) {
+               lastMessages.push(message);
+           }
+        });
+
+        return lastMessages;
+    },
     async save() {
         return fs.writeFile(fileName, JSON.stringify(data));
     }
