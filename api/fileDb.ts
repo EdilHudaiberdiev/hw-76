@@ -32,7 +32,7 @@ const fileDb = {
         let lastMessages: IMessages[] = [];
 
         data.forEach(message => {
-           if (new Date(message.date) >= datetime) {
+           if (new Date(message.date) > datetime) {
                lastMessages.push(message);
            }
         });
