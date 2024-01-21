@@ -1,8 +1,11 @@
 'use client';
 import styles from "./page.module.css";
-import {IMessageForm} from "@/types";
+import { IMessageForm} from "@/types";
 import {FormEvent, useState} from "react";
 import {Alert, Button, TextField} from "@mui/material";
+import {useMutation} from "@tanstack/react-query";
+import axiosApi from "@/axiosApi";
+
 
 const Home = () => {
     const [loading, setLoading] = useState(false);
@@ -19,17 +22,38 @@ const Home = () => {
         }));
     };
 
+    const SendMessageReq  = useMutation( {
+        mutationFn: async (formData: IMessageForm) => {
+            if (formData.message.trim().length > 0 && formData.author.trim().length > 0) {
+                setLoading(true);
+                try {
+                    const response = await axiosApi.post('/messages', {...formData});
+                    setMessage((prev) => ({
+                        ...prev,
+                        message: message.message,
+                        author: message.author,
+                    }));
+                } catch (e) {
+                    console.error(e);
+                }
+                setLoading(false);
+                setError(false);
+            } else {
+                setError(true);
+            }
+        }
+    });
+
     const addNewMessageRequest = async (e: FormEvent) => {
       e.preventDefault();
 
         if (message.message.trim().length !== 0 && message.author.trim().length !== 0) {
-            console.log(message);
+            await SendMessageReq.mutateAsync(message);
             setError(false);
         } else {
             setError(true);
         }
     };
-
 
     return (
         <main className={styles.main}>
